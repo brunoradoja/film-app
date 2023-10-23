@@ -1,11 +1,14 @@
-import React, { useEffect } from 'react'
+import React, { useEffect } from 'react';
 import { useState } from 'react';
 import ShowCard from '../ShowCard';
+import RatingButton from '../RatingButton';
+import EnglishButton from '../EnglishButton';
 
 export default function SearchForm() {
     const [inputValue, setInputValue] = useState('');
     const [searchString, setSearchString] = useState('');
     const [showData, setShowData] = useState([]);
+    const [displayShowData, setDisplayShowData] = useState([]);
 
     function handleInput(e) {
         setInputValue(e.target.value);
@@ -21,21 +24,27 @@ export default function SearchForm() {
         async function searchAPI() {
             const response = await fetch(`https://api.tvmaze.com/search/shows?q=${searchString}`);
             const data = await response.json();
-            const showData = data.map(s => s.show);
-            setShowData(showData);
+            const fetchedShowData = data.map(s => s.show);
+            
+            setShowData(fetchedShowData);
+            setDisplayShowData(fetchedShowData); // display results immediately after fetching
         }
-        searchAPI();
+        if (searchString) { // Only call the API if searchString has a value
+            searchAPI();
+        }
     }, [searchString]);
-
 
     return (
         <>
             <form onSubmit={handleSubmit}>
-                <input type="text" required onChange={handleInput} value={inputValue}/>
+                <input type="text" required onChange={handleInput} value={inputValue} />
                 <input type="submit" value="Search" />
             </form>
-            {showData.map(s => s? <ShowCard key={s.id} show={s} /> : "")}
-
+            <div className="button-container">
+                <RatingButton showData={showData} setDisplayData={setDisplayShowData} />
+                <EnglishButton showData={showData} setDisplayData={setDisplayShowData} />
+            </div>
+            {displayShowData.map(s => <ShowCard key={s.id} show={s} />)}
         </>
-      );
+    );
 }
